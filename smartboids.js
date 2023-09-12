@@ -6,24 +6,24 @@ class AutoBoid {
   static MINSEEKP=-1
   static MAXSEEKP=1
   static MINGOODR=32
-  static MAXGOODR=128
+  static MAXGOODR=150
   static MINBADR=32
-  static MAXBADR=128
+  static MAXBADR=120
   static MINPARTNER=32
-  static MAXPARTNER=256
-  static MINSIZE=2
+  static MAXPARTNER=200
+  static MINSIZE=4
   static MAXSIZE=10
   static MINVEL=2
   static MAXVEL=8
   static MAXENERGY=1200
-  static MAXAGE=1200// 30sec = 
+  static MAXAGE=1800// 30sec = 60
 
   constructor(x, y, gene, btype, parent1id, parent2id) {
     this.pos = createVector(x, y);
     this.vel = createVector(random(-1, 1), random(-1, 1));
     this.acc = createVector(0, 0);
     this.alive = true;
-    this.maxSteerForce = 0.5;
+    this.maxSteerForce = 0.3;
     if (Array.isArray(gene)) {
       this.gene = [];
       for (let i = 0; i < gene.length; i++) {
@@ -94,7 +94,7 @@ class AutoBoid {
     this.r             = this.gene[6];
     this.age=0;
 
-    this.m = this.r / 2;
+    this.m = 2; // this.r / 2; making it 1 for now
     //this.maxSpeed=map(this.r,1,16,8,2)
     this.maxSpeed = map(this.r, AutoBoid.MINSIZE, AutoBoid.MAXSIZE, AutoBoid.MAXVEL, AutoBoid.MINVEL);
 
@@ -106,7 +106,8 @@ class AutoBoid {
 
     this.avoidEdgeRadius = 64;
     //AutoBoid.MAXENERGY = 1000; //this.gene[6] * 100;
-    this.energy = AutoBoid.MAXENERGY//200*this.r; //this.gene[6] * 100;
+    this.maxEnergy = AutoBoid.MAXENERGY;
+    this.energy = this.maxEnergy//200*this.r; //this.gene[6] * 100;//because max energy can be different for different boids
     //this.lifeCost=this.r;
     //this.energy = AutoBoid.MAXENERGY;
     this.mutationRate = 0.1;
@@ -130,8 +131,8 @@ class AutoBoid {
     //     //this.energy = AutoBoid.MAXENERGY;
     // }
 
-    if (this.energy > AutoBoid.MAXENERGY) {
-      this.energy = AutoBoid.MAXENERGY;
+    if (this.energy > this.maxEnergy) {
+      this.energy = this.maxEnergy;
     }
     if (this.energy < 0 || this.age>AutoBoid.MAXAGE) {
       this.alive = false;
@@ -149,8 +150,8 @@ class AutoBoid {
     this.acc.mult(0);
 
     this.energy -= 1;//this.vel.mag() / 10;
-    if(this.vel.mag()<this.maxSpeed*0.25){
-      this.energy-=5
+    if(this.vel.mag()<this.maxSpeed*0.2){
+      this.energy-=10
     }
     this.age+=1;
   }
@@ -162,12 +163,12 @@ class AutoBoid {
       let col = lerpColor(
         color(255, 0, 0),
         color(0, 255, 0),
-        this.energy / AutoBoid.MAXENERGY
+        this.energy / this.maxEnergy
       );
       fill(col);
       stroke(col);
     } else if (this.btype == "ideal") {
-      let col = lerpColor(color(0), color(255), this.energy / AutoBoid.MAXENERGY);
+      let col = lerpColor(color(0), color(255), this.energy / this.maxEnergy);
       fill(col);
       stroke(col);
     }
@@ -208,7 +209,7 @@ class AutoBoid {
       fill(255, 0, 0);
       rect(-this.r, -20, 20, 3);
       fill(0, 255, 0);
-      rect(-this.r, -20, map(this.energy, 0, AutoBoid.MAXENERGY, 0, 20),3 );
+      rect(-this.r, -20, map(this.energy, 0, this.maxEnergy, 0, 20),3 );
       //draw the age bar in yellow with black background
       fill(0, 0, 255);
       rect(-this.r, -15, 20, 3);
@@ -454,6 +455,10 @@ class AutoBoid {
       d < this.partnerRadius &&
       !(this.btype == "ideal" && partner.btype == "ideal")
     ) {
+      //energy cost of reproduction
+      this.energy -= this.maxEnergy * 0.5;//for 1200 energy 0.5 is 600
+      partner.energy -= this.maxEnergy * 0.5;
+      //add a highlight to the parents later
       let child = this.crossover(partner);
       child.mutate();
       console.log("after mutation child Gene   : " + child.gene);

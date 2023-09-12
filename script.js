@@ -6,12 +6,15 @@ let foods = {
 };
 let buffer = 0;
 const POPULATION = 200;
-const reproductionChance = 0.008;
+const reproductionChance = 0.01;
 const FOODBUFF = 200;
 const POISONNERF = -400;
 const FRICTION = 0.0;
 let r;
-
+const MIN_AGE_SEEKING = 0.1;//in percent of max age
+const MIN_ENERGY_SEEKING = 0.6;//in percent of max energy
+const MIN_AGE_REPRO = 0.25;//in percent of max age
+const MIN_ENERGY_REPRO = 0.9;//in percent of max energy
 //remember to add if procreation happened it cost energy
 
 function setup() {
@@ -20,7 +23,7 @@ function setup() {
   frameRate(60);
   //let idealGene = [0.5, 150, -1, 20, 150, 4];
   flock.push(
-    new AutoBoid(width / 2, height / 2, [1, -0.5, 1, 128, 32, 256, 8], "ideal")
+    new AutoBoid(width / 2, height / 2, [1, -0.5, 1, 120, 32, 150, 8], "ideal")
   );
   for (let i = 0; i < POPULATION; i++) {
     flock.push(
@@ -95,9 +98,9 @@ function draw() {
       //if(flock.length<POPULATION/2&&boid != flock[j] && r<reproductionChance && boid.energy>AutoBoid.MAXENERGY/2 && flock[j].energy>flock[j].energy/2){
       if (
         boid != flock[j] &&
-        boid.energy > AutoBoid.MAXENERGY * 0.9 &&
-        flock[j].energy > flock[j].energy * 0.9   &&     boid.age > 0.08 * AutoBoid.MAXAGE &&
-        flock[j].age > 0.08 * AutoBoid.MAXAGE
+        boid.energy > boid.maxEnergy * MIN_ENERGY_SEEKING &&
+        flock[j].energy > flock[j].maxEnergy * MIN_ENERGY_SEEKING   &&     boid.age > MIN_AGE_SEEKING * AutoBoid.MAXAGE &&
+        flock[j].age > MIN_AGE_SEEKING * AutoBoid.MAXAGE
       ) {
         boid.seekPartner(flock[j]);
       }
@@ -105,10 +108,10 @@ function draw() {
         flock.length < POPULATION &&
         boid != flock[j] &&
         r < reproductionChance &&
-        boid.energy > AutoBoid.MAXENERGY * 0.8 &&
-        flock[j].energy > flock[j].energy * 0.8 &&
-        boid.age > 0.25 * AutoBoid.MAXAGE &&
-        flock[j].age > 0.25 * AutoBoid.MAXAGE
+        boid.energy > boid.maxEnergy * MIN_ENERGY_REPRO &&
+        flock[j].energy > flock[j].maxEnergy * MIN_ENERGY_REPRO &&
+        boid.age > MIN_AGE_REPRO * AutoBoid.MAXAGE &&
+        flock[j].age > MIN_AGE_REPRO * AutoBoid.MAXAGE
       ) {
         boid.seekPartner(flock[j]);
         //if (r < reproductionChance) {
