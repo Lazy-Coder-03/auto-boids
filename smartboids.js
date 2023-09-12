@@ -1,4 +1,6 @@
+// Define a class called AutoBoid
 class AutoBoid {
+  // Define static constants for various parameters
   static MINSEEKG = -1;
   static MAXSEEKG = 1;
   static MINSEEKB = -1;
@@ -16,76 +18,47 @@ class AutoBoid {
   static MINVEL = 4;
   static MAXVEL = 16;
   static MAXENERGY = 1200;
-  static MAXAGE = 1800; // 30sec = 60
-  static REPROCOST=0.25;
+  static MAXAGE = 1800; // 30 seconds (60 frames per second)
+  static REPROCOST = 0.25;
 
+  // Constructor for the AutoBoid class
   constructor(x, y, gene, btype, parent1, parent2) {
+    // Initialize position, velocity, acceleration, and other properties
     this.pos = createVector(x, y);
     this.vel = createVector(random(-1, 1), random(-1, 1));
     this.acc = createVector(0, 0);
     this.alive = true;
     this.maxSteerForce = 0.3;
 
+    // Set gene values based on input or random values
     if (Array.isArray(gene)) {
-      this.gene = [];
-      for (let i = 0; i < gene.length; i++) {
-        this.gene[i] = gene[i];
-      }
+      this.gene = gene.slice(); // Copy the array
     } else if (gene == undefined) {
       this.gene = [];
-      this.gene[0] = float(
-        nf(random(AutoBoid.MINSEEKG, AutoBoid.MAXSEEKG), 0, 2)
-      ); //seek good food
-      this.gene[1] = float(
-        nf(random(AutoBoid.MINSEEKB, AutoBoid.MAXSEEKB), 0, 2)
-      ); //seek bad food
-      //before adding seeking factor for partner
-      this.gene[2] = float(
-        nf(random(AutoBoid.MINSEEKP, AutoBoid.MAXSEEKP), 0, 2)
-      ); //seek partner
-      this.gene[3] = int(random(AutoBoid.MINGOODR, AutoBoid.MAXGOODR)); // good food radius
-      this.gene[4] = int(random(AutoBoid.MINBADR, AutoBoid.MAXBADR)); //bad food radius
-      this.gene[5] = int(random(AutoBoid.MINPARTNER, AutoBoid.MAXPARTNER)); //procreate radius
-      //if(random(1)<0.5){this.gene[5]=int(random(2,4))}else{this.gene[5]=int(random(5,8))} //90% small 10% big
-      this.gene[6] = int(random(AutoBoid.MINSIZE, AutoBoid.MAXSIZE)); //size
-
-      // this.gene[1] = float(nf(random(-1, 1), 0, 2)); //seek bad food
-      // this.gene[2] = int(random(32, 128)); // good food radius
-      // this.gene[3] = int(random(32, 128)); //bad food radius
-      // this.gene[4] = int(random(32, 128)); //procreate radius
-      // //if(random(1)<0.5){this.gene[5]=int(random(2,4))}else{this.gene[5]=int(random(5,8))} //90% small 10% big
-      // this.gene[5] = int(random(2, 8)); //size
+      this.gene[0] = float(nf(random(AutoBoid.MINSEEKG, AutoBoid.MAXSEEKG), 0, 2)); // Seek good food
+      this.gene[1] = float(nf(random(AutoBoid.MINSEEKB, AutoBoid.MAXSEEKB), 0, 2)); // Seek bad food
+      this.gene[2] = float(nf(random(AutoBoid.MINSEEKP, AutoBoid.MAXSEEKP), 0, 2)); // Seek partner
+      this.gene[3] = int(random(AutoBoid.MINGOODR, AutoBoid.MAXGOODR)); // Good food radius
+      this.gene[4] = int(random(AutoBoid.MINBADR, AutoBoid.MAXBADR)); // Bad food radius
+      this.gene[5] = int(random(AutoBoid.MINPARTNER, AutoBoid.MAXPARTNER)); // Procreate radius
+      this.gene[6] = int(random(AutoBoid.MINSIZE, AutoBoid.MAXSIZE)); // Size
     } else {
       this.gene = gene;
     }
+
+    // Set default values for btype if not provided
     if (btype == undefined) {
       this.btype = "random";
     } else {
       this.btype = btype;
     }
-    //this.id = str(this.gene[0]) + ":" + str(this.gene[1]) + ":" + str(this.gene[2]) + ":" + str(this.gene[3]) + ":" + str(this.gene[4]) + ":" + str(this.gene[5]);
 
-    this.parentIds =
-      parent1 && parent2 ? [parent1.id, parent2.id] : ["None", "None"];
-    this.id = this.generateId();
-    // this.id =
-    //   this.gene
-    //     .map((value) => {
-    //       if (Number.isInteger(value)) {
-    //         return value.toString(16).toUpperCase();
-    //       } else {
-    //         return int(value * 255)
-    //           .toString(16)
-    //           .toUpperCase();
-    //       }
-    //     })
-    //     .join(" : ") +
-    //   " : " +
-    //   this.btype;
-    this.pid = this.generatepid();
+    // Set parent IDs for reproduction tracking
+    this.parentIds = parent1 && parent2 ? [parent1.id, parent2.id] : ["None", "None"];
+    this.id = this.generateId(); // Generate a unique ID
+    this.pid = this.generatepid(); // Generate a unique parent ID
 
-    //this.pid += this.parentIds.join(" : "); //+ " | Parent PIDs: " + this.parentPids.join(" : ");
-
+    // Extract values from the gene for easier access
     this.goodFactor = this.gene[0];
     this.badFactor = this.gene[1];
     this.partnerFactor = this.gene[2];
@@ -95,48 +68,32 @@ class AutoBoid {
     this.r = this.gene[6];
     this.age = 0;
 
-    this.m = 2; // this.r / 2; making it 1 for now
-    //this.maxSpeed=map(this.r,1,16,8,2)
-    this.maxSpeed = map(
-      this.r,
-      AutoBoid.MINSIZE,
-      AutoBoid.MAXSIZE,
-      AutoBoid.MAXVEL,
-      AutoBoid.MINVEL
-    );
-
-    // this.minFoodRad = 16;
-    // this.maxFoodRad = 200;
-    // this.minPartnerRad = 32;
-    // this.maxPartnerRad = 200;
+    this.m = 2; // Mass (for now, making it 1)
+    this.maxSpeed = map(this.r, AutoBoid.MINSIZE, AutoBoid.MAXSIZE, AutoBoid.MAXVEL, AutoBoid.MINVEL);
 
     this.avoidEdgeRadius = 64;
-    //AutoBoid.MAXENERGY = 1000; //this.gene[6] * 100;
     this.maxEnergy = AutoBoid.MAXENERGY;
-    this.energy = this.maxEnergy; //200*this.r; //this.gene[6] * 100;//because max energy can be different for different boids
-    //this.lifeCost=this.r;
-    //this.energy = AutoBoid.MAXENERGY;
+    this.energy = this.maxEnergy;
     this.mutationRate = 0.1;
   }
-  //applyforce based on mass (this.m)
+
+  // Apply a force to the boid, considering its mass
   applyForce(force) {
     let f = force.copy();
     if (this.m) {
-      f = p5.Vector.div(force, this.m);
+      f.div(this.m);
     }
     this.acc.add(f);
   }
+
+  // Check if the boid is alive
   isAlive() {
     return this.alive;
   }
-  //update velocity and position
-  update() {
-    // if(this.energy<0){
-    //     addFood(this.pos.x,this.pos.y);
-    //     //this.pos = createVector(random(buffer,width-buffer),random(buffer,height-buffer));
-    //     //this.energy = AutoBoid.MAXENERGY;
-    // }
 
+  // Update velocity and position of the boid
+  update() {
+    // Handle energy and age
     if (this.energy > this.maxEnergy) {
       this.energy = this.maxEnergy;
     }
@@ -144,36 +101,36 @@ class AutoBoid {
       this.alive = false;
     }
 
+    // Apply random force to add some randomness to movement
     let rand = createVector(random(-1, 1), random(-1, 1));
     rand.normalize();
     rand.mult(0.3);
     this.applyForce(rand);
 
+    // Update velocity, position, and other properties
     this.vel.add(this.acc);
     this.pos.add(this.vel);
     this.vel.limit(this.maxSpeed);
     this.vel.mult(1 - FRICTION);
     this.acc.mult(0);
 
-    //this.vel.mag() / 10;
+    // Decrease energy based on velocity
     if (this.vel.mag() < this.maxSpeed * 0.2) {
       this.energy -= 5;
-    }
-    else{
+    } else {
       this.energy -= 1;
     }
     this.age += 1;
   }
-  //draw a triangle
+
+  // Draw the boid as a triangle
   show() {
+    // Calculate the angle of rotation based on velocity
     let theta = this.vel.heading() + PI / 2;
-    //lerp color based on life
+
+    // Set fill and stroke colors based on boid type and energy
     if (this.btype == "random") {
-      let col = lerpColor(
-        color(255, 0, 0),
-        color(0, 255, 0),
-        this.energy / this.maxEnergy
-      );
+      let col = lerpColor(color(255, 0, 0), color(0, 255, 0), this.energy / this.maxEnergy);
       fill(col);
       stroke(col);
     } else if (this.btype == "ideal") {
@@ -181,57 +138,61 @@ class AutoBoid {
       fill(col);
       stroke(col);
     }
+
     push();
     translate(this.pos.x, this.pos.y);
     rotate(theta);
-    beginShape();
-    //make concave kite
-    let scalefact=1
-    vertex(0, -this.r*1.5*scalefact);
-    vertex(-this.r*scalefact, this.r*scalefact);
-    vertex(0, this.r*0.8*scalefact);
-    vertex(this.r*scalefact, this.r*scalefact);
 
+    // Draw a concave kite shape
+    let scalefact = 1;
+    beginShape();
+    vertex(0, -this.r * 1.5 * scalefact);
+    vertex(-this.r * scalefact, this.r * scalefact);
+    vertex(0, this.r * 0.8 * scalefact);
+    vertex(this.r * scalefact, this.r * scalefact);
     endShape(CLOSE);
+
     pop();
+
+    // Optionally, draw debug info
     if (debug) {
       this.drawDebugInfo();
     }
   }
 
+  // Draw debug information for the boid
   drawDebugInfo() {
-    // Draw debug info
+    // Calculate the angle of rotation based on velocity
     let theta = this.vel.heading() + PI / 2;
+
+    // Draw circles representing various radii
     noFill();
     stroke(0, 255, 0, 100);
     ellipse(this.pos.x, this.pos.y, this.goodRadius * 2, this.goodRadius * 2);
     stroke(255, 0, 0, 100);
     ellipse(this.pos.x, this.pos.y, this.badRadius * 2, this.badRadius * 2);
     stroke(0, 0, 255, 100);
-    ellipse(
-      this.pos.x,
-      this.pos.y,
-      this.partnerRadius * 2,
-      this.partnerRadius * 2
-    );
+    ellipse(this.pos.x, this.pos.y, this.partnerRadius * 2, this.partnerRadius * 2);
+
     push();
     translate(this.pos.x, this.pos.y);
-    //draw the health bar in green with black background
+
+    // Draw health and age bars
     stroke(0);
     strokeWeight(1);
     fill(255, 0, 0);
     rect(-this.r, -20, 20, 3);
     fill(0, 255, 0);
     rect(-this.r, -20, map(this.energy, 0, this.maxEnergy, 0, 20), 3);
-    //draw the age bar in yellow with black background
     fill(0, 0, 255);
     rect(-this.r, -15, 20, 3);
     fill(255, 255, 0);
     rect(-this.r, -15, map(this.age, 0, AutoBoid.MAXAGE, 0, 20), 3);
 
+    // Draw lines representing various factors
     rotate(theta);
     stroke(0, 0, 255);
-    strokeWeight(3);
+    strokeWeight(1);
     line(0, 0, 0, -this.partnerFactor * 25);
     stroke(0, 255, 0);
     strokeWeight(1);
@@ -239,33 +200,23 @@ class AutoBoid {
     stroke(255, 0, 0);
     strokeWeight(2);
     line(0, 0, 0, -this.badFactor * 25);
+
     pop();
   }
 
+  // Seek a partner boid
   seekPartner(partner) {
     let desired = p5.Vector.sub(partner.pos, this.pos);
     let d = desired.mag();
 
-    if (
-      d < this.partnerRadius &&
-      d < partner.partnerRadius &&
-      !(this.btype == "ideal" && partner.btype == "ideal")
-    ) {
+    if (d < this.partnerRadius && d < partner.partnerRadius && !(this.btype == "ideal" && partner.btype == "ideal")) {
       // Calculate a steering force based on distance
       let scaleFactor = map(d, 0, this.partnerRadius, 0.8, 0.08);
       scaleFactor *= this.partnerFactor;
       desired.mult(scaleFactor);
       desired.limit(this.maxSteerForce);
       if (debug) {
-        //   push()
-        //   translate(this.pos.x, this.pos.y);
-        //   rotate(this.vel.heading() + PI / 2);
-        //   let a=map(this.partnerFactor,AutoBoid.MINSEEKP,AutoBoid.MAXSEEKP,0,255)
-        // stroke(0, 0, 255,a);
-        // line(0, 0, 0, -this.partnerFactor * 25);
-        // //line(0,-this.r,partner.pos.x-this.pos.x,partner.pos.y-this.pos.y)
-        // pop()
-        stroke(0, 0, 255,100);
+        stroke(0, 0, 255, 100);
         strokeWeight(1);
         line(this.pos.x, this.pos.y, partner.pos.x, partner.pos.y);
       }
@@ -273,6 +224,7 @@ class AutoBoid {
     }
   }
 
+  // Wrap around the edges of the canvas
   loopAroundEdges() {
     if (this.pos.x < -this.avoidEdgeRadius) {
       this.pos.x = width + this.avoidEdgeRadius;
@@ -287,6 +239,7 @@ class AutoBoid {
     }
   }
 
+  // Avoid edges of the canvas
   avoidEdges() {
     let desired = null;
     if (this.pos.x < this.avoidEdgeRadius) {
@@ -303,7 +256,6 @@ class AutoBoid {
 
     if (desired !== null) {
       desired.normalize();
-      //console.log(this.maxSpeed,this.id);
       desired.mult(this.maxSpeed);
       let steer = p5.Vector.sub(desired, this.vel);
       steer.limit(this.maxSteerForce);
@@ -311,29 +263,29 @@ class AutoBoid {
     }
   }
 
+  // Seek good or bad food
   seekFood(food) {
     let desired = p5.Vector.sub(food.pos, this.pos);
     let d = desired.mag();
 
     if (food.type == "good" && d < this.goodRadius) {
-      // Calculate a steering force based on distance
+      // Calculate a steering force based on distance for good food
       let scaleFactor = map(d, 0, this.goodRadius, 0.8, 0.08);
       scaleFactor *= this.goodFactor;
       desired.mult(scaleFactor);
       desired.limit(this.maxSteerForce);
-
       this.applyForce(desired);
     } else if (food.type == "bad" && d < this.badRadius) {
-      // Calculate a steering force based on distance
+      // Calculate a steering force based on distance for bad food
       let scaleFactor = map(d, 0, this.badRadius, 0.8, 0.08);
       scaleFactor *= this.badFactor;
       desired.mult(scaleFactor);
       desired.limit(this.maxSteerForce);
-
       this.applyForce(desired);
     }
   }
 
+  // Steer towards a desired vector with a given factor
   steerTowards(desired, factor) {
     desired.normalize();
     desired.mult(this.maxSpeed);
@@ -343,109 +295,60 @@ class AutoBoid {
     this.applyForce(steer);
   }
 
+  // Check if the boid is close enough to food to eat it
   eat(food) {
-    return p5.Vector.dist(this.pos, food.pos) < food.r * 2 + 10; //this.r
+    return p5.Vector.dist(this.pos, food.pos) < food.r * 2 + 10;
   }
 
+  // Clone the boid with the same gene
   clone() {
-    let childGene = [];
-    for (let i = 0; i < this.gene.length; i++) {
-      childGene[i] = this.gene[i];
-    }
+    let childGene = this.gene.slice(); // Copy the gene array
     return new AutoBoid(this.pos.x, this.pos.y, childGene, this.btype);
   }
 
+  // Mutate the gene with a certain probability
   mutate() {
     let mutationRate = this.mutationRate;
 
     if (random(1) < mutationRate) {
-      this.gene[0] = limitThis(
-        this.gene[0] + float(nf(random(-1, 1), 0, 2)),
-        AutoBoid.MINSEEKG,
-        AutoBoid.MAXSEEKG
-      );
+      this.gene[0] = limitThis(this.gene[0] + float(nf(random(-1, 1), 0, 2)), AutoBoid.MINSEEKG, AutoBoid.MAXSEEKG);
       console.log("mutated good factor gene[0] : " + this.gene[0]);
     }
     if (random(1) < mutationRate) {
-      this.gene[1] = limitThis(
-        this.gene[1] + float(nf(random(-1, 1), 0, 2)),
-        AutoBoid.MINSEEKB,
-        AutoBoid.MAXSEEKB
-      );
+      this.gene[1] = limitThis(this.gene[1] + float(nf(random(-1, 1), 0, 2)), AutoBoid.MINSEEKB, AutoBoid.MAXSEEKB);
       console.log("mutated bad factor gene[1] : " + this.gene[1]);
     }
     if (random(1) < mutationRate) {
-      this.gene[2] = limitThis(
-        this.gene[2] + float(nf(random(-1, 1), 0, 2)),
-        AutoBoid.MINSEEKP,
-        AutoBoid.MAXSEEKP
-      );
+      this.gene[2] = limitThis(this.gene[2] + float(nf(random(-1, 1), 0, 2)), AutoBoid.MINSEEKP, AutoBoid.MAXSEEKP);
       console.log("mutated partner factor gene[2] : " + this.gene[2]);
     }
     if (random(1) < mutationRate) {
-      this.gene[3] = limitThis(
-        this.gene[3] + int(random(-100, 100)),
-        AutoBoid.MINGOODR,
-        AutoBoid.MAXGOODR
-      );
+      this.gene[3] = limitThis(this.gene[3] + int(random(-100, 100)), AutoBoid.MINGOODR, AutoBoid.MAXGOODR);
       console.log("mutated good radius gene[3] : " + this.gene[3]);
     }
 
     if (random(1) < mutationRate) {
-      this.gene[4] = limitThis(
-        this.gene[4] + int(random(-100, 100)),
-        AutoBoid.MINBADR,
-        AutoBoid.MAXBADR
-      );
+      this.gene[4] = limitThis(this.gene[4] + int(random(-100, 100)), AutoBoid.MINBADR, AutoBoid.MAXBADR);
       console.log("mutated bad radius gene[4] : " + this.gene[4]);
     }
     if (random(1) < mutationRate) {
-      this.gene[5] = limitThis(
-        this.gene[5] + int(random(-100, 100)),
-        AutoBoid.MINPARTNER,
-        AutoBoid.MAXPARTNER
-      );
+      this.gene[5] = limitThis(this.gene[5] + int(random(-100, 100)), AutoBoid.MINPARTNER, AutoBoid.MAXPARTNER);
       console.log("mutated partner radius gene[5] : " + this.gene[5]);
     }
     if (random(1) < mutationRate) {
       const mins = AutoBoid.MINSIZE;
       const maxs = AutoBoid.MAXSIZE;
       const avg = int((mins + maxs) / 2);
-      this.gene[6] = limitThis(
-        this.gene[6] + int(random(-avg, avg)),
-        mins,
-        maxs
-      );
+      this.gene[6] = limitThis(this.gene[6] + int(random(-avg, avg)), mins, maxs);
       console.log("mutated size gene[6] : " + this.gene[6]);
     }
   }
 
-  //   mutate() {
-  //     let mutationRate = this.mutationRate;
-  //     for (let i = 0; i < this.gene.length; i++) {
-  //       if (random(1) < mutationRate) {
-  //         if (i % 2 == 0) {
-  //           this.gene[i] = limitThis(
-  //             this.gene[i] + float(nf(random(-1, 1), 0, 2)),
-  //             -1,
-  //             1
-  //           );
-  //         } else {
-  //           this.gene[i] = limitThis(
-  //             this.gene[i] + int(random(10, 100)),
-  //             this.minFoodRad,
-  //             this.maxFoodRad
-  //           );
-  //         }
-  //       }
-  //     }
-  //   }
-
+  // Perform crossover with another boid to create a child
   crossover(partner) {
     let childGene = [];
     let mid = int(random(this.gene.length));
     let childbtype = this.btype;
-    //if(partner.btype=="ideal"){childbtype="ideal"}
 
     for (let i = 0; i < this.gene.length; i++) {
       if (i > mid) {
@@ -454,46 +357,29 @@ class AutoBoid {
         childGene[i] = partner.gene[i];
       }
     }
-    console.log("in cross over parent 1 Gene : " + this.gene);
-    console.log("in cross over parent 2 Gene : " + partner.gene);
-    console.log("in cross over child Gene    : " + childGene);
-    //console.log("%cchild pid is      : " + this.pid,color)
-    //console.log("child btype is      : " + childbtype);
-    let child = new AutoBoid(
-      this.pos.x,
-      this.pos.y,
-      childGene,
-      childbtype,
-      this,
-      partner
-    );
-   
-    console.log("child pid is : " + child.pid);
-    //child.vel.setMag(child.maxSpeed);
+
+    let child = new AutoBoid(this.pos.x, this.pos.y, childGene, childbtype, this, partner);
+    child.id = child.generateId();
     return child;
   }
+
+  // Reproduce with another boid
   procreate(partner) {
-    //console.log(partner)
     let d = p5.Vector.dist(this.pos, partner.pos);
-    if (
-      d < this.partnerRadius &&
-      !(this.btype == "ideal" && partner.btype == "ideal")
-    ) {
-      //energy cost of reproduction
-      this.energy -= this.maxEnergy * AutoBoid.REPROCOST; //for 1200 energy 0.5 is 600
+    if (d < this.partnerRadius && !(this.btype == "ideal" && partner.btype == "ideal")) {
+      // Energy cost of reproduction
+      this.energy -= this.maxEnergy * AutoBoid.REPROCOST;
       partner.energy -= this.maxEnergy * AutoBoid.REPROCOST;
-      //add a highlight to the parents later
+
       let child = this.crossover(partner);
       child.mutate();
-      child.id=child.generateId();
-      console.log("child id is  : " + child.id);
-      console.log("after mutation child Gene   : " + child.gene);
-      console.log("-------------------------------------------------------");
       return child;
     } else {
       return null;
     }
   }
+
+  // Generate a hex id based on gene and btype
   generateHexId() {
     let gene = this.gene;
     let btype = this.btype;
@@ -502,9 +388,7 @@ class AutoBoid {
       if (Number.isInteger(gene[i])) {
         id += gene[i].toString(16).toUpperCase();
       } else {
-        id += int(gene[i] * 255)
-          .toString(16)
-          .toUpperCase();
+        id += int(gene[i] * 255).toString(16).toUpperCase();
       }
       if (i < gene.length - 1) {
         id += ":";
@@ -514,27 +398,27 @@ class AutoBoid {
     return id;
   }
 
+  // Generate a pid based on parent ids
   generatepid() {
-    const p1id=this.parentIds[0];
-    const p2id=this.parentIds[1];
+    const p1id = this.parentIds[0];
+    const p2id = this.parentIds[1];
     let pid = "";
     pid += p1id + " :: " + p2id;
     return pid;
-
   }
-  //generate normal id not hex just floats and ints
-   generateId() {
+
+  // Generate a normal id not hex, using floats and ints in gene
+  generateId() {
     let gene = this.gene;
     let btype = this.btype;
     let id = "";
     for (let i = 0; i < gene.length; i++) {
-      id += nf(gene[i],0,2);
+      id += nf(gene[i], 0, 2);
       if (i < gene.length - 1) {
         id += ":";
       }
     }
     id += ":" + btype;
     return id;
-
-   }
+  }
 }
