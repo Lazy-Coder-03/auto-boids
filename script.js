@@ -16,7 +16,7 @@ const MIN_AGE_SEEKING = 0.1; //in percent of max age
 const MIN_ENERGY_SEEKING = 0.8; //in percent of max energy
 const MIN_AGE_REPRO = 0.25; //in percent of max age
 const MIN_ENERGY_REPRO = 0.9; //in percent of max energy
-const canvasAspectRatio = 4 /3;
+const canvasAspectRatio = 2/1;
 let simulationSpeed = 1;
 
 //get HTML elements
@@ -86,7 +86,7 @@ popslider.addEventListener("input", () => {
 // Function to update the max population span
 function updateMaxPopulationSpan() {
   maxpopspan.innerHTML = POPULATION;
-  popsliderspan.innerHTML = POPULATION;
+  popsliderspan.innerHTML = "Population : "+POPULATION;
 }
 
 // Function to set the slider's disabled attribute based on the "start" variable
@@ -141,7 +141,7 @@ function setup() {
     canvasHeight = windowWidth / canvasAspectRatio;
   }
 
-  const canvas = createCanvas(canvasWidth, canvasHeight);
+  const canvas = createCanvas(800, 600);
   canvas.parent("canvas-container");
   background(0);
   background(0);
@@ -200,7 +200,7 @@ function setup() {
       canvasHeight = windowWidth / canvasAspectRatio;
     }
 
-    resizeCanvas(canvasWidth, canvasHeight);
+    resizeCanvas(800, 600);
     //resetSimulation()
     redraw(); // Redraw the canvas when the window is resized
   });

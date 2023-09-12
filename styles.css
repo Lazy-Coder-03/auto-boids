@@ -13,26 +13,22 @@ body {
     flex-direction: column;
     justify-content: flex-start; /* Center horizontally and align to the top */
     align-items: center;
-    min-height: 100vh; /* Set the body to at least cover the viewport height */
+    min-height: calc(100vh - 10px); /* Set the body to at least 10px less than the viewport height */
     font-family: Arial, sans-serif; /* Specify a default font-family */
     overflow: hidden; /* Hide any content overflow */
+    margin: 0; /* Remove default margin */
 }
-span{
-    font-size: 0.8em;
-    font-weight: bold;
-    color: #000;
-}
+
 /* Adjust styles for mobile devices (screens smaller than 768px wide) */
 @media (max-width: 768px) {
     #canvas-container {
         position: relative;
-        height: 50vh; /* Set canvas container height to 50% of viewport height */
-        width: 100%; /* Make the canvas container full-width */
+        height: calc(100vh - 3em); /* Set canvas container height to 100% viewport height minus 3em */
+        width: calc(100% - 3em); /* Set canvas container width to 100% minus 3em */
         max-width: 1000px; /* Limit the maximum width of the canvas container */
         overflow: hidden; /* Hide any overflow from the canvas */
-        margin-bottom: 20px; /* Add some spacing between canvas and other elements */
-        align-self: flex-start; /* Align the canvas container to the top of the page */
-        border: solid#ccc 4px;
+        margin: 1.5em; /* Add 1.5em spacing around the canvas */
+        border: solid #ccc 4px;
     }
     
     /* Reduce button padding for mobile */
@@ -55,7 +51,6 @@ span{
     max-width: 1000px; /* Limit the maximum width of the canvas container */
     overflow: hidden; /* Hide any overflow from the canvas */
     margin-bottom: 2em; /* Add some spacing between canvas and other elements */
-    
 }
 
 .debug,
@@ -96,8 +91,7 @@ button:disabled {
 
 /* Style the p5.js canvas (assuming it's inserted into #canvas-container) */
 canvas {
-
-    border:4px solid#ccc ;
+    border: 4px solid rgb(70, 146, 40); /* Add a blue border around the canvas */
     /* Add any other canvas styles here */
 }
 
