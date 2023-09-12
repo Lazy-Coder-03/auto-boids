@@ -92,11 +92,11 @@ function draw() {
     }
     //reproduction loop
     for (let j = 0; j < flock.length; j++) {
-      //if(flock.length<POPULATION/2&&boid != flock[j] && r<reproductionChance && boid.energy>AutoBoid.MAXENERGY/2 && flock[j].energy>flock[j].lifeSpan/2){
+      //if(flock.length<POPULATION/2&&boid != flock[j] && r<reproductionChance && boid.energy>AutoBoid.MAXENERGY/2 && flock[j].energy>flock[j].energy/2){
       if (
         boid != flock[j] &&
         boid.energy > AutoBoid.MAXENERGY * 0.9 &&
-        flock[j].energy > flock[j].lifeSpan * 0.9   &&     boid.age > 0.08 * AutoBoid.MAXAGE &&
+        flock[j].energy > flock[j].energy * 0.9   &&     boid.age > 0.08 * AutoBoid.MAXAGE &&
         flock[j].age > 0.08 * AutoBoid.MAXAGE
       ) {
         boid.seekPartner(flock[j]);
@@ -106,7 +106,7 @@ function draw() {
         boid != flock[j] &&
         r < reproductionChance &&
         boid.energy > AutoBoid.MAXENERGY * 0.8 &&
-        flock[j].energy > flock[j].lifeSpan * 0.8 &&
+        flock[j].energy > flock[j].energy * 0.8 &&
         boid.age > 0.25 * AutoBoid.MAXAGE &&
         flock[j].age > 0.25 * AutoBoid.MAXAGE
       ) {
