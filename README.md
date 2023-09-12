@@ -198,4 +198,4 @@ Contributions to the `script.js` file are welcome! If you have ideas for improve
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE)
+This project is licensed under GNU GENERAL PUBLIC LICENSE - see the [LICENSE](LICENSE)
