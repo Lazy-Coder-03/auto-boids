@@ -12,16 +12,17 @@ class AutoBoid {
   static MINPARTNER=32
   static MAXPARTNER=256
   static MINSIZE=2
-  static MAXSIZE=8
+  static MAXSIZE=10
   static MINVEL=2
   static MAXVEL=8
-  static LIFESPAN=1000
+  static MAXENERGY=1200
+  static MAXAGE=1200// 30sec = 
 
   constructor(x, y, gene, btype, parent1id, parent2id) {
     this.pos = createVector(x, y);
     this.vel = createVector(random(-1, 1), random(-1, 1));
     this.acc = createVector(0, 0);
-
+    this.alive = true;
     this.maxSteerForce = 0.5;
     if (Array.isArray(gene)) {
       this.gene = [];
@@ -91,6 +92,7 @@ class AutoBoid {
     this.badRadius     = this.gene[4];
     this.partnerRadius = this.gene[5];
     this.r             = this.gene[6];
+    this.age=0;
 
     this.m = this.r / 2;
     //this.maxSpeed=map(this.r,1,16,8,2)
@@ -103,10 +105,10 @@ class AutoBoid {
     // this.maxPartnerRad = 200;
 
     this.avoidEdgeRadius = 64;
-    //this.lifeSpan = 1000; //this.gene[6] * 100;
-    this.lifeSpan = 1000;//200*this.r; //this.gene[6] * 100;
+    //AutoBoid.MAXENERGY = 1000; //this.gene[6] * 100;
+    this.energy = AutoBoid.MAXENERGY//200*this.r; //this.gene[6] * 100;
     //this.lifeCost=this.r;
-    this.life = this.lifeSpan;
+    //this.energy = AutoBoid.MAXENERGY;
     this.mutationRate = 0.1;
   }
   //applyforce based on mass (this.m)
@@ -117,16 +119,22 @@ class AutoBoid {
     }
     this.acc.add(f);
   }
+  isAlive() {
+    return this.alive;
+  }
   //update velocity and position
   update() {
-    // if(this.life<0){
+    // if(this.energy<0){
     //     addFood(this.pos.x,this.pos.y);
     //     //this.pos = createVector(random(buffer,width-buffer),random(buffer,height-buffer));
-    //     //this.life = this.lifeSpan;
+    //     //this.energy = AutoBoid.MAXENERGY;
     // }
 
-    if (this.life > this.lifeSpan) {
-      this.life = this.lifeSpan;
+    if (this.energy > AutoBoid.MAXENERGY) {
+      this.energy = AutoBoid.MAXENERGY;
+    }
+    if (this.energy < 0 || this.age>AutoBoid.MAXAGE) {
+      this.alive = false;
     }
 
     let rand = createVector(random(-1, 1), random(-1, 1));
@@ -140,10 +148,11 @@ class AutoBoid {
     this.vel.mult(1 - FRICTION);
     this.acc.mult(0);
 
-    this.life -= 1;//this.vel.mag() / 10;
-    if(this.vel.mag()<this.maxSpeed/2){
-      this.life-=5
+    this.energy -= 1;//this.vel.mag() / 10;
+    if(this.vel.mag()<this.maxSpeed*0.25){
+      this.energy-=5
     }
+    this.age+=1;
   }
   //draw a triangle
   show() {
@@ -153,12 +162,12 @@ class AutoBoid {
       let col = lerpColor(
         color(255, 0, 0),
         color(0, 255, 0),
-        this.life / this.lifeSpan
+        this.energy / AutoBoid.MAXENERGY
       );
       fill(col);
       stroke(col);
     } else if (this.btype == "ideal") {
-      let col = lerpColor(color(0), color(255), this.life / this.lifeSpan);
+      let col = lerpColor(color(0), color(255), this.energy / AutoBoid.MAXENERGY);
       fill(col);
       stroke(col);
     }
@@ -193,6 +202,20 @@ class AutoBoid {
     );
     push();
     translate(this.pos.x, this.pos.y);
+      //draw the health bar in green with black background
+      stroke(0);
+      strokeWeight(1);
+      fill(255, 0, 0);
+      rect(-this.r, -20, 20, 3);
+      fill(0, 255, 0);
+      rect(-this.r, -20, map(this.energy, 0, AutoBoid.MAXENERGY, 0, 20),3 );
+      //draw the age bar in yellow with black background
+      fill(0, 0, 255);
+      rect(-this.r, -15, 20, 3);
+      fill(255, 255, 0);
+      rect(-this.r, -15, map(this.age, 0, AutoBoid.MAXAGE, 0, 20), 3);
+
+
     rotate(theta);
     stroke(0,0,255)
     strokeWeight(3);
@@ -203,7 +226,6 @@ class AutoBoid {
     stroke(255, 0, 0);
     strokeWeight(2);
     line(0, 0, 0, -this.badFactor * 25);
-
     pop();
   }
 
