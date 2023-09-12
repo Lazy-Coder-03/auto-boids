@@ -1,5 +1,4 @@
 
-```markdown
 # AutoBoids Simulation
 
 AutoBoids is a simulation project that allows you to create and observe autonomous agents known as "boids" as they exhibit various behaviors, such as seeking food, avoiding edges, and reproducing based on their genetic attributes.
