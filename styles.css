@@ -1,4 +1,188 @@
-body{
-    margin:0;
-    padding:0;
+/* Reset default margin and padding for all elements */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    overflow: hidden; /* Disable scrolling for both html and body elements */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Center horizontally and align to the top */
+    align-items: center;
+    min-height: 100vh; /* Set the body to at least cover the viewport height */
+    font-family: Arial, sans-serif; /* Specify a default font-family */
+    overflow: hidden; /* Hide any content overflow */
+}
+span{
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #000;
+}
+/* Adjust styles for mobile devices (screens smaller than 768px wide) */
+@media (max-width: 768px) {
+    #canvas-container {
+        position: relative;
+        height: 50vh; /* Set canvas container height to 50% of viewport height */
+        width: 100%; /* Make the canvas container full-width */
+        max-width: 1000px; /* Limit the maximum width of the canvas container */
+        overflow: hidden; /* Hide any overflow from the canvas */
+        margin-bottom: 20px; /* Add some spacing between canvas and other elements */
+        align-self: flex-start; /* Align the canvas container to the top of the page */
+        border: solid#ccc 4px;
+    }
+    
+    /* Reduce button padding for mobile */
+    button {
+        padding: 8px 16px;
+        font-size: 14px;
+        border-radius: 1em;
+    }
+    
+    /* Reduce font size for statistics on mobile */
+    .stats p {
+        font-size: 12px;
+    }
+}
+
+#canvas-container {
+    position: relative;
+    height: 720px; /* Set the canvas container height */
+    width: 100%; /* Make the canvas container full-width */
+    max-width: 1000px; /* Limit the maximum width of the canvas container */
+    overflow: hidden; /* Hide any overflow from the canvas */
+    margin-bottom: 2em; /* Add some spacing between canvas and other elements */
+    
+}
+
+.debug,
+.controls,
+.populationcontrol {
+    margin-top: 0.5em; /* Reduce the margin-top */
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Add smooth transition for background-color change */
+    border-radius: 1em;
+}
+
+/* Style enabled buttons */
+button:not(:disabled) {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+}
+
+/* Style disabled buttons */
+button:disabled {
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    cursor: not-allowed; /* Change cursor for disabled buttons */
+}
+
+/* Style the header/title if needed */
+.headline {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Style the p5.js canvas (assuming it's inserted into #canvas-container) */
+canvas {
+
+    border:4px solid#ccc ;
+    /* Add any other canvas styles here */
+}
+
+/* Style the input range slider container */
+.slider-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Style the input range slider */
+.slider {
+    width: 100%;
+    -webkit-appearance: none; /* Remove default styles for WebKit browsers */
+    appearance: none; /* Remove default styles for non-WebKit browsers */
+    height: 10px; /* Customize the slider height */
+    border-radius: 5px; /* Add rounded corners to the slider */
+    background: #f0f0f0; /* Background color of the slider track */
+}
+
+/* Style the slider thumb (handle) */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Remove default styles for WebKit browsers */
+    appearance: none; /* Remove default styles for non-WebKit browsers */
+    width: 20px; /* Customize the thumb width */
+    height: 20px; /* Customize the thumb height */
+    background: #4caf50; /* Thumb color when active */
+    border-radius: 50%; /* Make the thumb circular */
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 20px; /* Customize the thumb width for Firefox */
+    height: 20px; /* Customize the thumb height for Firefox */
+    background: #4caf50; /* Thumb color when active for Firefox */
+    border-radius: 50%; /* Make the thumb circular for Firefox */
+    cursor: pointer;
+}
+
+/* Style the input range slider when it's disabled */
+.slider:disabled {
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+}
+
+.slider:disabled::-webkit-slider-thumb {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.slider:disabled::-moz-range-thumb {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Style the statistics section */
+.stats {
+    position: absolute;
+    top: 0;
+    right: 0;
+    text-align: right; /* Align text to the right */
+    padding: 10px; /* Add some padding for spacing */
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+    border: 1px solid #ccc; /* Add a border for the stats section */
+    border-radius: 5px; /* Add rounded corners */
+}
+
+.stats p {
+    margin-bottom: 5px;
+    font-weight: bold; /* Move font-weight here */
+}
+
+/* Style the max population and current population spans */
+#maxpopulationspan,
+#populationspan {
+    font-weight: normal; /* Reset font-weight */
+}
+
+/* Style the debug button when debug is active (green) */
+#debug.active {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Style the start/stop button when active (red for stop) */
+#start.active {
+    background-color: #f44336;
+    color: white;
 }

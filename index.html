@@ -1,18 +1,61 @@
-<head>
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
-  <link rel="stylesheet" type="text/css" href="styles.css" />
-  <meta charset="utf-8" />
-
-  <title>Auto boids</title>
-</head>
-<body>
-  <div id="canvas-container">
-    <!-- Your p5.js canvas will be inserted here -->
-  </div>
-  <script src="script.js"></script>
-  <script src="boid.js"></script>
-  <script src="food.js"></script>
-  <script src="smartboids.js"></script>
-</body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <meta charset="utf-8" />
+    <title>Auto boids</title>
+  </head>
+  <body>
+    <div class="container">
+      <div id="canvas-container">
+        <!-- Your p5.js canvas will be inserted here -->
+      </div>
+      <div class="right-top">
+        <div class="stats">
+          <p>Max Population: <span id="maxpopulationspan"></span></p>
+          <p>Current Population: <span id="populationspan"></span></p>
+          <p></p>
+          <p>Current Food Amount: <span id="foodspan"></span></p>
+          <p>Current Poison Amount: <span id="poisonspan"></span></p>
+        </div>
+      </div>
+    </div>
+    <div class="debug">
+      <button type="button" id="debug">Debug</button>
+    </div>
+    <div class="controls">
+      <button type="button" id="start">Start</button>
+      <button type="button" id="reset">Reset</button>
+      <!-- Add the reset button -->
+    </div>
+    <div class="populationcontrol">
+      <input
+        type="range"
+        min="10"
+        max="1000"
+        step="10"
+        value="250"
+        class="slider"
+        id="populationslider"
+      />
+    </div>
+    <span id="population-slider-value">Population : 250</span>
+    <div class="speedcontrol">
+      <input
+        type="range"
+        min="1"
+        max="20"
+        step="1"
+        value="1"
+        class="slider"
+        id="speedslider"
+      />
+    </div>
+    <span id="speed-slider-value">Speed : 1</span>
+    <script src="script.js"></script>
+    <script src="boid.js"></script>
+    <script src="food.js"></script>
+    <script src="smartboids.js"></script>
+  </body>
 </html>
-  

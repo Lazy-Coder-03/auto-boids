@@ -1,29 +1,31 @@
 class AutoBoid {
-  static MINSEEKG=-1
-  static MAXSEEKG=1
-  static MINSEEKB=-1
-  static MAXSEEKB=1
-  static MINSEEKP=-1
-  static MAXSEEKP=1
-  static MINGOODR=32
-  static MAXGOODR=150
-  static MINBADR=32
-  static MAXBADR=120
-  static MINPARTNER=32
-  static MAXPARTNER=200
-  static MINSIZE=4
-  static MAXSIZE=10
-  static MINVEL=2
-  static MAXVEL=8
-  static MAXENERGY=1200
-  static MAXAGE=1800// 30sec = 60
+  static MINSEEKG = -1;
+  static MAXSEEKG = 1;
+  static MINSEEKB = -1;
+  static MAXSEEKB = 1;
+  static MINSEEKP = -1;
+  static MAXSEEKP = 1;
+  static MINGOODR = 32;
+  static MAXGOODR = 150;
+  static MINBADR = 32;
+  static MAXBADR = 120;
+  static MINPARTNER = 32;
+  static MAXPARTNER = 200;
+  static MINSIZE = 4;
+  static MAXSIZE = 8;
+  static MINVEL = 4;
+  static MAXVEL = 16;
+  static MAXENERGY = 1200;
+  static MAXAGE = 1800; // 30sec = 60
+  static REPROCOST=0.25;
 
-  constructor(x, y, gene, btype, parent1id, parent2id) {
+  constructor(x, y, gene, btype, parent1, parent2) {
     this.pos = createVector(x, y);
     this.vel = createVector(random(-1, 1), random(-1, 1));
     this.acc = createVector(0, 0);
     this.alive = true;
     this.maxSteerForce = 0.3;
+
     if (Array.isArray(gene)) {
       this.gene = [];
       for (let i = 0; i < gene.length; i++) {
@@ -31,15 +33,21 @@ class AutoBoid {
       }
     } else if (gene == undefined) {
       this.gene = [];
-      this.gene[0] = float(nf(random(AutoBoid.MINSEEKG,AutoBoid.MAXSEEKG), 0, 2)); //seek good food
-      this.gene[1] = float(nf(random(AutoBoid.MINSEEKB,AutoBoid.MAXSEEKB), 0, 2)); //seek bad food
-      //before adding seeking factor for partner  
-      this.gene[2] = float(nf(random(AutoBoid.MINSEEKP,AutoBoid.MAXSEEKP), 0, 2)); //seek partner
-      this.gene[3] = int(random(AutoBoid.MINGOODR,AutoBoid.MAXGOODR)); // good food radius
-      this.gene[4] = int(random(AutoBoid.MINBADR,AutoBoid.MAXBADR)); //bad food radius
-      this.gene[5] = int(random(AutoBoid.MINPARTNER,AutoBoid.MAXPARTNER)); //procreate radius
+      this.gene[0] = float(
+        nf(random(AutoBoid.MINSEEKG, AutoBoid.MAXSEEKG), 0, 2)
+      ); //seek good food
+      this.gene[1] = float(
+        nf(random(AutoBoid.MINSEEKB, AutoBoid.MAXSEEKB), 0, 2)
+      ); //seek bad food
+      //before adding seeking factor for partner
+      this.gene[2] = float(
+        nf(random(AutoBoid.MINSEEKP, AutoBoid.MAXSEEKP), 0, 2)
+      ); //seek partner
+      this.gene[3] = int(random(AutoBoid.MINGOODR, AutoBoid.MAXGOODR)); // good food radius
+      this.gene[4] = int(random(AutoBoid.MINBADR, AutoBoid.MAXBADR)); //bad food radius
+      this.gene[5] = int(random(AutoBoid.MINPARTNER, AutoBoid.MAXPARTNER)); //procreate radius
       //if(random(1)<0.5){this.gene[5]=int(random(2,4))}else{this.gene[5]=int(random(5,8))} //90% small 10% big
-      this.gene[6] = int(random(AutoBoid.MINSIZE,AutoBoid.MAXSIZE)); //size
+      this.gene[6] = int(random(AutoBoid.MINSIZE, AutoBoid.MAXSIZE)); //size
 
       // this.gene[1] = float(nf(random(-1, 1), 0, 2)); //seek bad food
       // this.gene[2] = int(random(32, 128)); // good food radius
@@ -57,47 +65,45 @@ class AutoBoid {
     }
     //this.id = str(this.gene[0]) + ":" + str(this.gene[1]) + ":" + str(this.gene[2]) + ":" + str(this.gene[3]) + ":" + str(this.gene[4]) + ":" + str(this.gene[5]);
 
-    this.id =
-      //"#" +
-      this.gene
-        .map((value) => {
-          if (Number.isInteger(value)) {
-            // Convert integers to hexadecimal format
-            return value.toString(16).toUpperCase();
-          } else {
-            // Convert floating-point numbers to hexadecimal format
-            return int(value * 255)
-              .toString(16)
-              .toUpperCase();
-          }
-        })
-        .join(" : ") +
-      " : " +
-      this.btype;
-    this.parentIds = []; // Initialize an array to store parent IDs
+    this.parentIds =
+      parent1 && parent2 ? [parent1.id, parent2.id] : ["None", "None"];
+    this.id = this.generateId();
+    // this.id =
+    //   this.gene
+    //     .map((value) => {
+    //       if (Number.isInteger(value)) {
+    //         return value.toString(16).toUpperCase();
+    //       } else {
+    //         return int(value * 255)
+    //           .toString(16)
+    //           .toUpperCase();
+    //       }
+    //     })
+    //     .join(" : ") +
+    //   " : " +
+    //   this.btype;
+    this.pid = this.generatepid();
 
-    if (parent1id !== undefined && parent2id !== undefined) {
-      // Add parent IDs to the array
-      this.parentIds.push(parent1id);
-      this.parentIds.push(parent2id);
-    } else {
-      this.parentIds.push("None");
-      this.parentIds.push("None");
-    }
-    this.pid = "Parents: " + this.parentIds.join(" : ");
-    this.goodFactor    = this.gene[0];
-    this.badFactor     = this.gene[1];
+    //this.pid += this.parentIds.join(" : "); //+ " | Parent PIDs: " + this.parentPids.join(" : ");
+
+    this.goodFactor = this.gene[0];
+    this.badFactor = this.gene[1];
     this.partnerFactor = this.gene[2];
-    this.goodRadius    = this.gene[3];
-    this.badRadius     = this.gene[4];
+    this.goodRadius = this.gene[3];
+    this.badRadius = this.gene[4];
     this.partnerRadius = this.gene[5];
-    this.r             = this.gene[6];
-    this.age=0;
+    this.r = this.gene[6];
+    this.age = 0;
 
     this.m = 2; // this.r / 2; making it 1 for now
     //this.maxSpeed=map(this.r,1,16,8,2)
-    this.maxSpeed = map(this.r, AutoBoid.MINSIZE, AutoBoid.MAXSIZE, AutoBoid.MAXVEL, AutoBoid.MINVEL);
-
+    this.maxSpeed = map(
+      this.r,
+      AutoBoid.MINSIZE,
+      AutoBoid.MAXSIZE,
+      AutoBoid.MAXVEL,
+      AutoBoid.MINVEL
+    );
 
     // this.minFoodRad = 16;
     // this.maxFoodRad = 200;
@@ -107,7 +113,7 @@ class AutoBoid {
     this.avoidEdgeRadius = 64;
     //AutoBoid.MAXENERGY = 1000; //this.gene[6] * 100;
     this.maxEnergy = AutoBoid.MAXENERGY;
-    this.energy = this.maxEnergy//200*this.r; //this.gene[6] * 100;//because max energy can be different for different boids
+    this.energy = this.maxEnergy; //200*this.r; //this.gene[6] * 100;//because max energy can be different for different boids
     //this.lifeCost=this.r;
     //this.energy = AutoBoid.MAXENERGY;
     this.mutationRate = 0.1;
@@ -134,7 +140,7 @@ class AutoBoid {
     if (this.energy > this.maxEnergy) {
       this.energy = this.maxEnergy;
     }
-    if (this.energy < 0 || this.age>AutoBoid.MAXAGE) {
+    if (this.energy < 0 || this.age > AutoBoid.MAXAGE) {
       this.alive = false;
     }
 
@@ -149,11 +155,14 @@ class AutoBoid {
     this.vel.mult(1 - FRICTION);
     this.acc.mult(0);
 
-    this.energy -= 1;//this.vel.mag() / 10;
-    if(this.vel.mag()<this.maxSpeed*0.2){
-      this.energy-=10
+    //this.vel.mag() / 10;
+    if (this.vel.mag() < this.maxSpeed * 0.2) {
+      this.energy -= 5;
     }
-    this.age+=1;
+    else{
+      this.energy -= 1;
+    }
+    this.age += 1;
   }
   //draw a triangle
   show() {
@@ -176,9 +185,13 @@ class AutoBoid {
     translate(this.pos.x, this.pos.y);
     rotate(theta);
     beginShape();
-    vertex(0, -this.r * 2);
-    vertex(-this.r, this.r * 2);
-    vertex(this.r, this.r * 2);
+    //make concave kite
+    let scalefact=1
+    vertex(0, -this.r*1.5*scalefact);
+    vertex(-this.r*scalefact, this.r*scalefact);
+    vertex(0, this.r*0.8*scalefact);
+    vertex(this.r*scalefact, this.r*scalefact);
+
     endShape(CLOSE);
     pop();
     if (debug) {
@@ -203,22 +216,21 @@ class AutoBoid {
     );
     push();
     translate(this.pos.x, this.pos.y);
-      //draw the health bar in green with black background
-      stroke(0);
-      strokeWeight(1);
-      fill(255, 0, 0);
-      rect(-this.r, -20, 20, 3);
-      fill(0, 255, 0);
-      rect(-this.r, -20, map(this.energy, 0, this.maxEnergy, 0, 20),3 );
-      //draw the age bar in yellow with black background
-      fill(0, 0, 255);
-      rect(-this.r, -15, 20, 3);
-      fill(255, 255, 0);
-      rect(-this.r, -15, map(this.age, 0, AutoBoid.MAXAGE, 0, 20), 3);
-
+    //draw the health bar in green with black background
+    stroke(0);
+    strokeWeight(1);
+    fill(255, 0, 0);
+    rect(-this.r, -20, 20, 3);
+    fill(0, 255, 0);
+    rect(-this.r, -20, map(this.energy, 0, this.maxEnergy, 0, 20), 3);
+    //draw the age bar in yellow with black background
+    fill(0, 0, 255);
+    rect(-this.r, -15, 20, 3);
+    fill(255, 255, 0);
+    rect(-this.r, -15, map(this.age, 0, AutoBoid.MAXAGE, 0, 20), 3);
 
     rotate(theta);
-    stroke(0,0,255)
+    stroke(0, 0, 255);
     strokeWeight(3);
     line(0, 0, 0, -this.partnerFactor * 25);
     stroke(0, 255, 0);
@@ -234,29 +246,32 @@ class AutoBoid {
     let desired = p5.Vector.sub(partner.pos, this.pos);
     let d = desired.mag();
 
-    if (d < this.partnerRadius &&d<partner.partnerRadius&&!(this.btype == "ideal" && partner.btype == "ideal")) {
+    if (
+      d < this.partnerRadius &&
+      d < partner.partnerRadius &&
+      !(this.btype == "ideal" && partner.btype == "ideal")
+    ) {
       // Calculate a steering force based on distance
       let scaleFactor = map(d, 0, this.partnerRadius, 0.8, 0.08);
       scaleFactor *= this.partnerFactor;
       desired.mult(scaleFactor);
       desired.limit(this.maxSteerForce);
-      if(debug){
-      //   push()
-      //   translate(this.pos.x, this.pos.y);
-      //   rotate(this.vel.heading() + PI / 2);
-      //   let a=map(this.partnerFactor,AutoBoid.MINSEEKP,AutoBoid.MAXSEEKP,0,255)
-      // stroke(0, 0, 255,a);
-      // line(0, 0, 0, -this.partnerFactor * 25);
-      // //line(0,-this.r,partner.pos.x-this.pos.x,partner.pos.y-this.pos.y)
-      // pop()
-      line(this.pos.x, this.pos.y, partner.pos.x, partner.pos.y);
+      if (debug) {
+        //   push()
+        //   translate(this.pos.x, this.pos.y);
+        //   rotate(this.vel.heading() + PI / 2);
+        //   let a=map(this.partnerFactor,AutoBoid.MINSEEKP,AutoBoid.MAXSEEKP,0,255)
+        // stroke(0, 0, 255,a);
+        // line(0, 0, 0, -this.partnerFactor * 25);
+        // //line(0,-this.r,partner.pos.x-this.pos.x,partner.pos.y-this.pos.y)
+        // pop()
+        stroke(0, 0, 255,100);
+        strokeWeight(1);
+        line(this.pos.x, this.pos.y, partner.pos.x, partner.pos.y);
       }
       this.applyForce(desired);
     }
-
   }
-
-
 
   loopAroundEdges() {
     if (this.pos.x < -this.avoidEdgeRadius) {
@@ -271,7 +286,6 @@ class AutoBoid {
       this.pos.y = -this.avoidEdgeRadius;
     }
   }
-
 
   avoidEdges() {
     let desired = null;
@@ -347,29 +361,32 @@ class AutoBoid {
     if (random(1) < mutationRate) {
       this.gene[0] = limitThis(
         this.gene[0] + float(nf(random(-1, 1), 0, 2)),
-        AutoBoid.MINSEEKG,AutoBoid.MAXSEEKG
+        AutoBoid.MINSEEKG,
+        AutoBoid.MAXSEEKG
       );
       console.log("mutated good factor gene[0] : " + this.gene[0]);
     }
     if (random(1) < mutationRate) {
       this.gene[1] = limitThis(
         this.gene[1] + float(nf(random(-1, 1), 0, 2)),
-        AutoBoid.MINSEEKB,AutoBoid.MAXSEEKB
+        AutoBoid.MINSEEKB,
+        AutoBoid.MAXSEEKB
       );
       console.log("mutated bad factor gene[1] : " + this.gene[1]);
     }
     if (random(1) < mutationRate) {
-      this.gene[2] = limitThis(this.gene[2] + float(nf(random(-1, 1), 0, 2)), AutoBoid.MINSEEKP,AutoBoid.MAXSEEKP);
+      this.gene[2] = limitThis(
+        this.gene[2] + float(nf(random(-1, 1), 0, 2)),
+        AutoBoid.MINSEEKP,
+        AutoBoid.MAXSEEKP
+      );
       console.log("mutated partner factor gene[2] : " + this.gene[2]);
-
-
-
-
-      }
+    }
     if (random(1) < mutationRate) {
       this.gene[3] = limitThis(
         this.gene[3] + int(random(-100, 100)),
-        AutoBoid.MINGOODR,AutoBoid.MAXGOODR
+        AutoBoid.MINGOODR,
+        AutoBoid.MAXGOODR
       );
       console.log("mutated good radius gene[3] : " + this.gene[3]);
     }
@@ -377,22 +394,28 @@ class AutoBoid {
     if (random(1) < mutationRate) {
       this.gene[4] = limitThis(
         this.gene[4] + int(random(-100, 100)),
-        AutoBoid.MINBADR,AutoBoid.MAXBADR
+        AutoBoid.MINBADR,
+        AutoBoid.MAXBADR
       );
       console.log("mutated bad radius gene[4] : " + this.gene[4]);
     }
     if (random(1) < mutationRate) {
       this.gene[5] = limitThis(
         this.gene[5] + int(random(-100, 100)),
-        AutoBoid.MINPARTNER,AutoBoid.MAXPARTNER
+        AutoBoid.MINPARTNER,
+        AutoBoid.MAXPARTNER
       );
       console.log("mutated partner radius gene[5] : " + this.gene[5]);
     }
     if (random(1) < mutationRate) {
-      const mins=AutoBoid.MINSIZE
-      const maxs=AutoBoid.MAXSIZE
-      const avg=int((mins+maxs)/2)
-      this.gene[6] = limitThis(this.gene[6] + int(random(-avg, avg)),mins,maxs);
+      const mins = AutoBoid.MINSIZE;
+      const maxs = AutoBoid.MAXSIZE;
+      const avg = int((mins + maxs) / 2);
+      this.gene[6] = limitThis(
+        this.gene[6] + int(random(-avg, avg)),
+        mins,
+        maxs
+      );
       console.log("mutated size gene[6] : " + this.gene[6]);
     }
   }
@@ -441,9 +464,10 @@ class AutoBoid {
       this.pos.y,
       childGene,
       childbtype,
-      this.id,
-      partner.id
+      this,
+      partner
     );
+   
     console.log("child pid is : " + child.pid);
     //child.vel.setMag(child.maxSpeed);
     return child;
@@ -456,11 +480,13 @@ class AutoBoid {
       !(this.btype == "ideal" && partner.btype == "ideal")
     ) {
       //energy cost of reproduction
-      this.energy -= this.maxEnergy * 0.5;//for 1200 energy 0.5 is 600
-      partner.energy -= this.maxEnergy * 0.5;
+      this.energy -= this.maxEnergy * AutoBoid.REPROCOST; //for 1200 energy 0.5 is 600
+      partner.energy -= this.maxEnergy * AutoBoid.REPROCOST;
       //add a highlight to the parents later
       let child = this.crossover(partner);
       child.mutate();
+      child.id=child.generateId();
+      console.log("child id is  : " + child.id);
       console.log("after mutation child Gene   : " + child.gene);
       console.log("-------------------------------------------------------");
       return child;
@@ -468,4 +494,47 @@ class AutoBoid {
       return null;
     }
   }
+  generateHexId() {
+    let gene = this.gene;
+    let btype = this.btype;
+    let id = "";
+    for (let i = 0; i < gene.length; i++) {
+      if (Number.isInteger(gene[i])) {
+        id += gene[i].toString(16).toUpperCase();
+      } else {
+        id += int(gene[i] * 255)
+          .toString(16)
+          .toUpperCase();
+      }
+      if (i < gene.length - 1) {
+        id += ":";
+      }
+    }
+    id += ":" + btype;
+    return id;
+  }
+
+  generatepid() {
+    const p1id=this.parentIds[0];
+    const p2id=this.parentIds[1];
+    let pid = "";
+    pid += p1id + " :: " + p2id;
+    return pid;
+
+  }
+  //generate normal id not hex just floats and ints
+   generateId() {
+    let gene = this.gene;
+    let btype = this.btype;
+    let id = "";
+    for (let i = 0; i < gene.length; i++) {
+      id += nf(gene[i],0,2);
+      if (i < gene.length - 1) {
+        id += ":";
+      }
+    }
+    id += ":" + btype;
+    return id;
+
+   }
 }
