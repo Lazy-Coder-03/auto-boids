@@ -5,18 +5,20 @@ let foods = {
   bad: [],
 };
 let buffer = 0;
-const POPULATION = 200;
+const POPULATION = 500;
 const reproductionChance = 0.001;
 const FOODBUFF = 200;
-const POISONNERF=-400
-const FRICTION = 0.00;
+const POISONNERF = -400;
+const FRICTION = 0.0;
 let r;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
   //let idealGene = [0.5, 150, -1, 20, 150, 4];
-  flock.push(new AutoBoid(width / 2, height / 2, [1, -0.5, 128 , 32, 150, 8],"ideal"));
+  flock.push(
+    new AutoBoid(width / 2, height / 2, [1, -0.5, 1, 128, 32, 256, 8], "ideal")
+  );
   for (let i = 0; i < POPULATION; i++) {
     flock.push(
       new AutoBoid(
@@ -87,23 +89,13 @@ function draw() {
     //reproduction loop
     for (let j = 0; j < flock.length; j++) {
       //if(flock.length<POPULATION/2&&boid != flock[j] && r<reproductionChance && boid.life>boid.lifeSpan/2 && flock[j].life>flock[j].lifeSpan/2){
-        if(boid.life>boid.lifeSpan/2 && flock[j].life>flock[j].lifeSpan/2){
-          // let closestPartner=null;
-          // let closestPartnerDistance=Infinity;
-          // for(let partner of flock){
-          //   if(partner!=boid){
-          //     let d=p5.Vector.dist(boid.pos,partner.pos);
-          //     if(d<closestPartnerDistance){
-          //       closestPartnerDistance=d;
-          //       closestPartner=partner;
-          //     }
-          //   }
-          // }
-          // if(closestPartner!=null){
-          //   boid.seekPartner(closestPartner);
-          // }
-          boid.seekPartner(flock[j]);
-        }
+      if (
+        boid != flock[j] &&
+        boid.life > boid.lifeSpan * 0.8 &&
+        flock[j].life > flock[j].lifeSpan * 0.8
+      ) {
+        boid.seekPartner(flock[j]);
+      }
       if (
         flock.length < POPULATION &&
         boid != flock[j] &&
@@ -130,7 +122,7 @@ function draw() {
       )
     );
   }
-  if (foods.bad.length < POPULATION /5) {
+  if (foods.bad.length < POPULATION / 5) {
     foods.bad.push(
       new Food(
         random(buffer, width - buffer),
@@ -145,14 +137,12 @@ function draw() {
       food.show();
     }
   }
-  if(flock.length<=1){
+  if (flock.length <= 1) {
     flock.push(new AutoBoid(width / 2, height / 2));
-    let clone=flock[1].clone();
+    let clone = flock[1].clone();
     clone.mutate();
     flock.push(clone);
   }
-
-
 }
 
 function addFood(x, y) {
